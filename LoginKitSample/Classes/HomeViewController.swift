@@ -25,16 +25,16 @@ class HomeViewController: UIViewController {
     let productReuseIdentifier = "ProductReuse"
     let padding: CGFloat = 3
     var sellButton: UIButton!
-    
-    var index: ProductObject!
+
+    var index: Product!
     var selectedIndexPath: IndexPath!
-    
-    var products: [ProductObject] = []
+
+    var products: [Product] = []
     
     var preventLoad: Bool!
     
     override func viewDidAppear(_ animated: Bool) {
-        
+
         if defaults.bool(forKey: "did_accept_add_request") == false {
             
             if defaults.integer(forKey: "product_views") == viewInt {
@@ -46,7 +46,7 @@ class HomeViewController: UIViewController {
                     defaults.set(true, forKey: "did_accept_add_request")
                 }))
             
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Not now", comment: "Remind"), style: .destructive, handler: { _ in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Not Now", comment: "Remind"), style: .default, handler: { _ in
                     
                     defaults.set(-10, forKey: "product_views")
                 }))
@@ -59,18 +59,39 @@ class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = .white
         
         preventLoad = false
         
         NetworkManager.getProducts() { products in
-            self.products = products
-            self.products.reverse()
 
-            DispatchQueue.main.async {
-                self.productCollectionView.reloadData()
-                self.productCollectionView.isUserInteractionEnabled = true
+            for product in products {
+                
+                DispatchQueue.global().async {
+
+                    let productImageUrl = URL(string: product.product_image_url)
+                    let productImageData = try? Data(contentsOf: productImageUrl!)
+                    let productImage = UIImage(data: productImageData!)!
+
+                    var avatarImage: UIImage = UIImage()
+
+                    if product.avatar_url != "nil" {
+                        let avatarImageUrl = URL(string: product.avatar_url)
+                        let avatarImageData = try? Data(contentsOf: avatarImageUrl!)
+                        avatarImage = UIImage(data: avatarImageData!)!
+                    } else {
+                        avatarImage = UIImage(named: "profile")!
+                    }
+
+                    let convertedProduct = Product(id: product.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: product.seller_snapchat_username, is_favorited: product.is_favorited)
+                
+                    self.products.append(convertedProduct)
+
+                    DispatchQueue.main.async {
+                        self.productCollectionView.reloadData()
+                    }
+                }
             }
         }
 
@@ -80,7 +101,7 @@ class HomeViewController: UIViewController {
         self.navigationController?.navigationBar.shadowImage = UIImage()
         let avatarView = UIImageView()
         avatarView.contentMode = .scaleAspectFit
-        if defaults.string(forKey: "avatar_url")! == nil {
+        if defaults.string(forKey: "avatar_url")! == "nil" {
             let avatarImage = UIImage(named: "profile")
             avatarView.image = avatarImage
         } else {
@@ -107,7 +128,6 @@ class HomeViewController: UIViewController {
         productCollectionView.dataSource = self
         productCollectionView.delegate = self
         productCollectionView.register(ProductCollectionViewCell.self, forCellWithReuseIdentifier: productReuseIdentifier)
-        productCollectionView.isUserInteractionEnabled = false
         productCollectionView.showsVerticalScrollIndicator = false
         productCollectionView.alwaysBounceVertical = true
         productCollectionView.refreshControl = refreshControl
@@ -142,13 +162,37 @@ class HomeViewController: UIViewController {
     @objc func didPullToRefresh() {
         pageNumber = 1
         NetworkManager.getProducts() { products in
-            self.products = products
-            self.products.reverse()
+            
+            self.products.removeAll()
 
-            DispatchQueue.main.async {
-                self.productCollectionView.reloadData()
-                self.refreshControl.endRefreshing()
+            for product in products {
                 
+                DispatchQueue.global().async {
+
+                    let productImageUrl = URL(string: product.product_image_url)
+                    let productImageData = try? Data(contentsOf: productImageUrl!)
+                    let productImage = UIImage(data: productImageData!)!
+                
+                    var avatarImage: UIImage = UIImage()
+                
+                    if product.avatar_url != "nil" {
+                        let avatarImageUrl = URL(string: product.avatar_url)
+                        let avatarImageData = try? Data(contentsOf: avatarImageUrl!)
+                        avatarImage = UIImage(data: avatarImageData!)!
+                    } else {
+                        avatarImage = UIImage(named: "profile")!
+                    }
+                
+                    let newProduct = Product(id: product.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: product.seller_snapchat_username, is_favorited: product.is_favorited)
+                
+                    self.products.append(newProduct)
+
+                    DispatchQueue.main.async {
+                        self.productCollectionView.reloadData()
+                        self.refreshControl.endRefreshing()
+//                        self.productCollectionView.isUserInteractionEnabled = true
+                    }
+                }
             }
         }
     }
@@ -182,7 +226,7 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
         index = products[indexPath.item]
         self.selectedIndexPath = indexPath
         let nav = self.navigationController
-        let vc = ProductViewController(delegate: self, id: index.id, imageURL: index.product_image_url, avatarURL: index.avatar_url, sellerSnapchatUsername: index.seller_snapchat_username, favorited: index.is_favorited)
+        let vc = ProductViewController(delegate: self, id: index.id, image: index.product_image, avatar: index.avatar_image, sellerSnapchatUsername: index.seller_snapchat_username, favorited: index.is_favorited)
         nav?.delegate = vc.transitionController
         vc.transitionController.fromDelegate = self
         vc.transitionController.toDelegate = vc
@@ -213,25 +257,49 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if indexPath.item == products.count - 1 {
-            pageNumber += 1
-            if preventLoad == false {
-                NetworkManager.getProducts() { products in
-                    if products.isEmpty == false {
-                        var newProducts = products
-                        newProducts.reverse()
-                        self.products += newProducts
-
-                        DispatchQueue.main.async {
-                            self.productCollectionView.reloadData()
-
-                        }
-                    } else {
-                        self.preventLoad = true
-                    }
-                }
-            }
-        }
+//        if indexPath.row == products.count - 1 {
+//            pageNumber += 1
+//
+//            if preventLoad == false {
+//
+//                NetworkManager.getProducts() { products in
+//
+//                    if products.isEmpty == false {
+//
+//                        for product in products.reversed() {
+//
+//                            DispatchQueue.global().async {
+//
+//                                let productImageUrl = URL(string: product.product_image_url)
+//                                let productImageData = try? Data(contentsOf: productImageUrl!)
+//                                let productImage = UIImage(data: productImageData!)!
+//
+//                                var avatarImage: UIImage = UIImage()
+//
+//                                if product.avatar_url != "nil" {
+//                                    let avatarImageUrl = URL(string: product.avatar_url)
+//                                    let avatarImageData = try? Data(contentsOf: avatarImageUrl!)
+//                                    avatarImage = UIImage(data: avatarImageData!)!
+//                                } else {
+//                                    avatarImage = UIImage(named: "profile")!
+//                                }
+//
+//                                let newProduct = Product(id: product.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: product.seller_snapchat_username, is_favorited: product.is_favorited)
+//
+//                                self.products.append(newProduct)
+//
+//                                DispatchQueue.main.async {
+//                                    self.productCollectionView.reloadData()
+//                                }
+//                            }
+//                        }
+//
+//                    } else {
+//                        self.preventLoad = true
+//                    }
+//                }
+//            }
+//        }
     }
 
  //This function prevents the collectionView from accessing a deallocated cell. In the event

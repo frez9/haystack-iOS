@@ -34,6 +34,14 @@ extension LoginViewController {
             let external_Id = me["externalId"] as? String
             let bitmoji = me["bitmoji"] as? [String: Any]
             let avatar = bitmoji?["avatar"] as? String
+            
+            if avatar == nil {
+                self.defaults.set("nil", forKey: "avatar_url")
+            } else {
+                self.defaults.set(avatar, forKey: "avatar_url")
+            }
+
+            self.defaults.set(external_Id, forKey: "external_id")
 
             
             DispatchQueue.main.async {
@@ -43,10 +51,6 @@ extension LoginViewController {
                     self.defaults.set(true, forKey: "created_user_in_db")
                 }
             }
-
-            self.defaults.set(external_Id, forKey: "external_id")
-            self.defaults.set(avatar, forKey: "avatar_url")
-            
         }
         
         let failureBlock = { (error: Error?, success: Bool) in

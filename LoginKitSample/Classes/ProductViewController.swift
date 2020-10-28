@@ -30,27 +30,15 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
     
     var transitionController = ZoomTransitionController()
     
-    init(delegate: FavoriteProtocol?, id: Int, imageURL: String, avatarURL: String, sellerSnapchatUsername: String, favorited: Bool) {
+    init(delegate: FavoriteProtocol?, id: Int, image: UIImage, avatar: UIImage, sellerSnapchatUsername: String, favorited: Bool) {
         super.init(nibName:nil, bundle:nil)
         
         productId = id
         
-        let productImageUrl = URL(string: imageURL)
-        if let imageData = try? Data(contentsOf: productImageUrl!) {
-            productImage.image = UIImage(data: imageData)!
-        }
-        
-        if avatarURL == nil {
-            let avatarImage = UIImage(named: "profile")
-            sellerAvatar.image = avatarImage
-        } else {
-            let avatarImageUrl = URL(string: avatarURL)
-            if let avatarImageData = try? Data(contentsOf: avatarImageUrl!) {
-                sellerAvatar.image = UIImage(data: avatarImageData)!
-            }
-        }
-
+        self.productImage.image = image
+        self.sellerAvatar.image = avatar
         self.favorited = favorited
+        self.sellerSnapchatUsername = sellerSnapchatUsername
         self.delegate = delegate
 
     }
@@ -126,8 +114,8 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
     
     @objc func messageSellerButtonTapped() {
         Analytics.logEvent("messaged_seller", parameters: nil)
-        if sellerSnapchatUsername != nil {
-            UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/\(sellerSnapchatUsername)")!)
+        if sellerSnapchatUsername.isEmpty == false {
+            UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/\(sellerSnapchatUsername!)")!)
         } else {
             UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/x")!)
         }

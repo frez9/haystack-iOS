@@ -17,17 +17,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let window = UIWindow(frame: UIScreen.main.bounds)
+        
 //        SCSDKLoginClient.clearToken()
         if SCSDKLoginClient.isUserLoggedIn {
-            let viewController = HomeViewController()
+            let viewController = LoginViewController()
             window.rootViewController = UINavigationController(rootViewController: viewController)
             self.window = window
             window.makeKeyAndVisible()
-            
+
             FirebaseApp.configure()
 
             return true
-            
+
         } else {
             
         let viewController = LoginViewController()

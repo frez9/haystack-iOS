@@ -61,7 +61,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
         
         guard let backCamera = AVCaptureDevice.default(for: AVMediaType.video)
             else {
-                print("Unable to access back camera!")
                 return
         }
         
@@ -76,7 +75,24 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
             }
         }
         catch let error  {
-            print("Error Unable to initialize back camera:  \(error.localizedDescription)")
+            if AVCaptureDevice.authorizationStatus(for: AVMediaType.video) == .denied {
+
+                DispatchQueue.main.async {
+
+                    let alert = UIAlertController(title: "Allow \"Haystack\" access to Camera in Settings", message: nil, preferredStyle: .alert)
+
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Settings", comment: "Go to Settings"), style: .default, handler: { _ in
+                        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                    }))
+
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: "Close alert"), style: .default, handler: { _ in
+                        self.dismiss(animated: true, completion: nil)
+                    }))
+
+                    self.present(alert, animated: true, completion: nil)
+                }
+                
+            }
         }
         
         dismissButton = UIButton()

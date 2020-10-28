@@ -26,7 +26,7 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
     
     var noListingsLabel: UILabel!
     
-    var listings: [ListingObject] = []
+    var listings: [Listing] = []
     
 
     override func viewDidLoad() {
@@ -35,21 +35,35 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
         view.backgroundColor = .white
         
         NetworkManager.getMyListings() { listings in
-            self.listings = listings
-            self.listings.reverse()
+            
+            if listings.count == 0 {
+                self.noListingsLabel.isHidden = false
+                self.productCollectionView.isHidden = true
+            } else {
+                self.noListingsLabel.isHidden = true
+                self.productCollectionView.isHidden = false
+                self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(self.trashButtonTapped))
+                self.navigationItem.rightBarButtonItem?.tintColor = .black
+            
+                for listing in listings {
+                    
+                    DispatchQueue.global().async {
+                    
+                        let storage = Storage.storage()
+                        let productImageReference = storage.reference(forURL: listing.product_image_url)
 
-            DispatchQueue.main.async {
-                self.productCollectionView.reloadData()
-                self.productCollectionView.isUserInteractionEnabled = true
+                        let productImageUrl = URL(string: listing.product_image_url)
+                        let productImageData = try? Data(contentsOf: productImageUrl!)
+                        let productImage = UIImage(data: productImageData!)!
                 
-                if self.listings.count == 0 {
-                    self.noListingsLabel.isHidden = false
-                    self.productCollectionView.isHidden = true
-                } else {
-                    self.noListingsLabel.isHidden = true
-                    self.productCollectionView.isHidden = false
-                    self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(self.trashButtonTapped))
-                    self.navigationItem.rightBarButtonItem?.tintColor = .black
+                        let convertedProduct = Listing(id: listing.id, product_image: productImage, image_storage_reference: productImageReference)
+                
+                        self.listings.append(convertedProduct)
+
+                        DispatchQueue.main.async {
+                            self.productCollectionView.reloadData()
+                        }
+                    }
                 }
             }
         }
@@ -84,7 +98,6 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
         productCollectionView.dataSource = self
         productCollectionView.delegate = self
         productCollectionView.register(ProductCollectionViewCell.self, forCellWithReuseIdentifier: productReuseIdentifier)
-        productCollectionView.isUserInteractionEnabled = false
         productCollectionView.showsVerticalScrollIndicator = true
         productCollectionView.alwaysBounceVertical = true
         productCollectionView.refreshControl = refreshControl
@@ -118,23 +131,39 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
     
     @objc func didPullToRefresh() {
         NetworkManager.getMyListings() { listings in
-            self.listings = listings
-            self.listings.reverse()
+            
+            self.listings.removeAll()
+            
+            if listings.count == 0 {
+                self.noListingsLabel.isHidden = false
+                self.productCollectionView.isHidden = true
+            } else {
+                self.noListingsLabel.isHidden = true
+                self.productCollectionView.isHidden = false
+                self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(self.trashButtonTapped))
+                self.navigationItem.rightBarButtonItem?.tintColor = .black
+            
+                for listing in listings {
+                    
+                    DispatchQueue.global().async {
+                    
+                        let storage = Storage.storage()
+                        let productImageReference = storage.reference(forURL: listing.product_image_url)
 
-            DispatchQueue.main.async {
-                self.productCollectionView.reloadData()
+                        let productImageUrl = URL(string: listing.product_image_url)
+                        let productImageData = try? Data(contentsOf: productImageUrl!)
+                        let productImage = UIImage(data: productImageData!)!
                 
-                if self.listings.count == 0 {
-                    self.noListingsLabel.isHidden = false
-                    self.productCollectionView.isHidden = true
-                } else {
-                    self.noListingsLabel.isHidden = true
-                    self.productCollectionView.isHidden = false
-                    self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(self.trashButtonTapped))
-                    self.navigationItem.rightBarButtonItem?.tintColor = .black
+                        let convertedProduct = Listing(id: listing.id, product_image: productImage, image_storage_reference: productImageReference)
+                
+                        self.listings.append(convertedProduct)
+
+                        DispatchQueue.main.async {
+                            self.productCollectionView.reloadData()
+                            self.refreshControl.endRefreshing()
+                        }
+                    }
                 }
-                
-                self.refreshControl.endRefreshing()
             }
         }
     }
@@ -180,6 +209,7 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
             for item in items {
                 listingId = listings[item].id
                 NetworkManager.deleteListing()
+                listings[item].image_storage_reference.delete(completion: nil)
                 listings.remove(at: item)
                 
             }

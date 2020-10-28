@@ -8,6 +8,7 @@
 
 import Foundation
 import Alamofire
+import Firebase
 
 let endpoint = "http://35.231.51.48/api/listings/11111/1/"
 let userCreationEndpoint = "http://35.231.51.48/api/users/create/"
@@ -177,7 +178,7 @@ class NetworkManager {
             switch response.result {
             case .success(let data):
                 print(data)
-                
+
                 let decoder = JSONDecoder()
                 
                 if let productData = try? decoder.decode(ProductDataResponse.self, from: data) {
@@ -246,4 +247,22 @@ struct ProductObject: Decodable {
 struct ProductDataResponse: Decodable {
     var success: Bool
     var data: [ProductObject]
+}
+
+//Product Struct (used to improve scroll performance by converting product image URLs to UIImage objects within the get products network call completion)
+
+struct Product {
+    var id: Int
+    var product_image: UIImage
+    var avatar_image: UIImage
+    var seller_snapchat_username: String
+    var is_favorited: Bool
+}
+
+//Listing Struct (used to improve scroll performance by converting product image URLs to UIImage objects within the get products network call completion)
+
+struct Listing {
+    var id: Int
+    var product_image: UIImage
+    var image_storage_reference: StorageReference
 }

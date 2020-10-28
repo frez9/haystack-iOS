@@ -38,8 +38,6 @@ class ProfileViewController: UIViewController, UIGestureRecognizerDelegate, SFSa
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        NetworkManager.getSnapchatUsername()
-        
         view.backgroundColor = .white
         
         title = "Profile"
@@ -200,7 +198,7 @@ class ProfileViewController: UIViewController, UIGestureRecognizerDelegate, SFSa
         UIView.animate(withDuration: 0.15, animations: {
             self.usernameView.alpha = 0
             self.usernameView.endEditing(true)
-//            self.popButton.isUserInteractionEnabled = true
+            self.navigationController?.navigationBar.isUserInteractionEnabled = true
             self.myListingsCell.isUserInteractionEnabled = true
             self.myFavoritesCell.isUserInteractionEnabled = true
             self.freeSuppliesCell.isUserInteractionEnabled = true
@@ -210,12 +208,10 @@ class ProfileViewController: UIViewController, UIGestureRecognizerDelegate, SFSa
             self.helpCell.isUserInteractionEnabled = true
             self.logoutCell.isUserInteractionEnabled = true
         })
-        defaults.set(usernameField.text, forKey: "snapchat_username")
-//        snapchatUsername = usernameField.text
-        NetworkManager.updateSnapchatUsername()
-//        NetworkManager.getSnapchatUsername()
-//        usernameField.text = snapchatUsername
-        usernameField.text = defaults.string(forKey: "snapchat_username")
+        if usernameField.text != defaults.string(forKey: "snapchat_username") {
+            defaults.set(usernameField.text, forKey: "snapchat_username")
+            NetworkManager.updateSnapchatUsername()
+        }
     }
 
 }
@@ -258,9 +254,8 @@ extension ProfileViewController: UITableViewDelegate {
             case 5:
                 Analytics.logEvent("snapchat_username_cell_pressed", parameters: nil)
                 usernameField.text = defaults.string(forKey: "snapchat_username")
-//                usernameField.text = snapchatUsername
                 usernameView.alpha = 1
-//                popButton.isUserInteractionEnabled = false
+                navigationController?.navigationBar.isUserInteractionEnabled = false
                 myListingsCell.isUserInteractionEnabled = false
                 myFavoritesCell.isUserInteractionEnabled = false
                 freeSuppliesCell.isUserInteractionEnabled = false

@@ -19,32 +19,55 @@ class UserFavoritesViewController: UIViewController, UIGestureRecognizerDelegate
     let productReuseIdentifier = "ProductReuse"
     let padding: CGFloat = 3
 
-    var index: ProductObject!
+    var index: Product!
     var selectedIndexPath: IndexPath!
     
     var noFavoritesLabel: UILabel!
     
-    var favorites: [ProductObject] = []
+    var favorites: [Product] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = .white
         
         NetworkManager.getMyFavorites() { favorites in
-            self.favorites = favorites
-            self.favorites.reverse()
+            
+            if favorites.count == 0 {
+                self.noFavoritesLabel.isHidden = false
+                self.productCollectionView.isHidden = true
+            } else {
+                self.noFavoritesLabel.isHidden = true
+                self.productCollectionView.isHidden = false
+               
+                for favorite in favorites {
+                    
+                    DispatchQueue.global().async {
 
-            DispatchQueue.main.async {
-                self.productCollectionView.reloadData()
-                self.productCollectionView.isUserInteractionEnabled = true
+                        let productImageUrl = URL(string: favorite.product_image_url)
+                        let productImageData = try? Data(contentsOf: productImageUrl!)
+                        let productImage = UIImage(data: productImageData!)!
+                    
+                        var avatarImage: UIImage = UIImage()
+                    
+                        if favorite.avatar_url != "nil" {
+                            let avatarImageUrl = URL(string: favorite.avatar_url)
+                            let avatarImageData = try? Data(contentsOf: avatarImageUrl!)
+                            avatarImage = UIImage(data: avatarImageData!)!
+                        } else {
+                            avatarImage = UIImage(named: "profile")!
+                        }
                 
-                if self.favorites.count == 0 {
-                    self.noFavoritesLabel.isHidden = false
-                    self.productCollectionView.isHidden = true
-                } else {
-                    self.noFavoritesLabel.isHidden = true
-                    self.productCollectionView.isHidden = false
+                        let convertedProduct = Product(id: favorite.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: favorite.seller_snapchat_username, is_favorited: favorite.is_favorited)
+                
+                        self.favorites.append(convertedProduct)
+
+                        DispatchQueue.main.async {
+                            self.favorites.reverse()
+                            self.productCollectionView.reloadData()
+                            self.productCollectionView.isUserInteractionEnabled = true
+                        }
+                    }
                 }
             }
         }
@@ -98,21 +121,46 @@ class UserFavoritesViewController: UIViewController, UIGestureRecognizerDelegate
     
     @objc func didPullToRefresh() {
         NetworkManager.getMyFavorites() { favorites in
-            self.favorites = favorites
-            self.favorites.reverse()
+            
+            self.favorites.removeAll()
+            
+            if favorites.count == 0 {
+                self.noFavoritesLabel.isHidden = false
+                self.productCollectionView.isHidden = true
+            } else {
+                self.noFavoritesLabel.isHidden = true
+                self.productCollectionView.isHidden = false
+               
+                for favorite in favorites {
+                    
+                    DispatchQueue.global().async {
 
-            DispatchQueue.main.async {
-                self.productCollectionView.reloadData()
+                        let productImageUrl = URL(string: favorite.product_image_url)
+                        let productImageData = try? Data(contentsOf: productImageUrl!)
+                        let productImage = UIImage(data: productImageData!)!
+                    
+                        var avatarImage: UIImage = UIImage()
+                    
+                        if favorite.avatar_url != "nil" {
+                            let avatarImageUrl = URL(string: favorite.avatar_url)
+                            let avatarImageData = try? Data(contentsOf: avatarImageUrl!)
+                            avatarImage = UIImage(data: avatarImageData!)!
+                        } else {
+                            avatarImage = UIImage(named: "profile")!
+                        }
                 
-                if self.favorites.count == 0 {
-                    self.noFavoritesLabel.isHidden = false
-                    self.productCollectionView.isHidden = true
-                } else {
-                    self.noFavoritesLabel.isHidden = true
-                    self.productCollectionView.isHidden = false
+                        let convertedProduct = Product(id: favorite.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: favorite.seller_snapchat_username, is_favorited: favorite.is_favorited)
+                
+                        self.favorites.append(convertedProduct)
+
+                        DispatchQueue.main.async {
+                            self.favorites.reverse()
+                            self.productCollectionView.reloadData()
+                            self.refreshControl.endRefreshing()
+                            self.productCollectionView.isUserInteractionEnabled = true
+                        }
+                    }
                 }
-                
-                self.refreshControl.endRefreshing()
             }
         }
     }
@@ -153,7 +201,7 @@ extension UserFavoritesViewController: UICollectionViewDelegate, UICollectionVie
         index = favorites[indexPath.row]
         self.selectedIndexPath = indexPath
         let nav = self.navigationController
-        let vc = ProductViewController(delegate: self, id: index.id, imageURL: index.product_image_url, avatarURL: index.avatar_url, sellerSnapchatUsername: index.seller_snapchat_username, favorited: index.is_favorited)
+        let vc = ProductViewController(delegate: self, id: index.id, image: index.product_image, avatar: index.avatar_image, sellerSnapchatUsername: index.seller_snapchat_username, favorited: index.is_favorited)
         nav?.delegate = vc.transitionController
         vc.transitionController.fromDelegate = self
         vc.transitionController.toDelegate = vc

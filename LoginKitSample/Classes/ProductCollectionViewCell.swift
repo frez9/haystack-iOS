@@ -28,21 +28,14 @@ class ProductCollectionViewCell: UICollectionViewCell {
     
     }
     
-    func configure(product: ProductObject) {
-        self.contentView.backgroundColor = .white
-        let imageUrl = URL(string: product.product_image_url)
-        if let imageData = try? Data(contentsOf: imageUrl!) {
-            productImage.image = UIImage(data: imageData)!
-        }
+    func configure(product: Product) {
+        contentView.backgroundColor = .white
+        productImage.image = product.product_image
     }
-
     
-    func configure2(listing: ListingObject) {
-        self.contentView.backgroundColor = .white
-        let imageUrl = URL(string: listing.product_image_url)
-        if let imageData = try? Data(contentsOf: imageUrl!) {
-            productImage.image = UIImage(data: imageData)!
-        }
+    func configure2(listing: Listing) {
+        contentView.backgroundColor = .white
+        productImage.image = listing.product_image
     }
     
     func configure3() {
