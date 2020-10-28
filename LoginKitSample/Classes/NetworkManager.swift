@@ -180,11 +180,11 @@ class NetworkManager {
                 print(data)
 
                 let decoder = JSONDecoder()
-                
+
                 if let productData = try? decoder.decode(ProductDataResponse.self, from: data) {
-        
+
                     let products = productData.data
-                    
+
                     completion(products)
                 }
                 

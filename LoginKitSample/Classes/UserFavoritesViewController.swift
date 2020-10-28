@@ -39,10 +39,10 @@ class UserFavoritesViewController: UIViewController, UIGestureRecognizerDelegate
             } else {
                 self.noFavoritesLabel.isHidden = true
                 self.productCollectionView.isHidden = false
+                
+                DispatchQueue.global().async {
                
-                for favorite in favorites {
-                    
-                    DispatchQueue.global().async {
+                    for favorite in favorites {
 
                         let productImageUrl = URL(string: favorite.product_image_url)
                         let productImageData = try? Data(contentsOf: productImageUrl!)
@@ -61,12 +61,13 @@ class UserFavoritesViewController: UIViewController, UIGestureRecognizerDelegate
                         let convertedProduct = Product(id: favorite.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: favorite.seller_snapchat_username, is_favorited: favorite.is_favorited)
                 
                         self.favorites.append(convertedProduct)
+                        
+                    }
 
-                        DispatchQueue.main.async {
-                            self.favorites.reverse()
-                            self.productCollectionView.reloadData()
-                            self.productCollectionView.isUserInteractionEnabled = true
-                        }
+                    DispatchQueue.main.async {
+                        self.favorites.reverse()
+                        self.productCollectionView.reloadData()
+                        self.productCollectionView.isUserInteractionEnabled = true
                     }
                 }
             }
@@ -130,10 +131,10 @@ class UserFavoritesViewController: UIViewController, UIGestureRecognizerDelegate
             } else {
                 self.noFavoritesLabel.isHidden = true
                 self.productCollectionView.isHidden = false
+                
+                DispatchQueue.global().async {
                
-                for favorite in favorites {
-                    
-                    DispatchQueue.global().async {
+                    for favorite in favorites {
 
                         let productImageUrl = URL(string: favorite.product_image_url)
                         let productImageData = try? Data(contentsOf: productImageUrl!)
@@ -152,13 +153,14 @@ class UserFavoritesViewController: UIViewController, UIGestureRecognizerDelegate
                         let convertedProduct = Product(id: favorite.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: favorite.seller_snapchat_username, is_favorited: favorite.is_favorited)
                 
                         self.favorites.append(convertedProduct)
+                        
+                    }
 
-                        DispatchQueue.main.async {
-                            self.favorites.reverse()
-                            self.productCollectionView.reloadData()
-                            self.refreshControl.endRefreshing()
-                            self.productCollectionView.isUserInteractionEnabled = true
-                        }
+                    DispatchQueue.main.async {
+                        self.favorites.reverse()
+                        self.productCollectionView.reloadData()
+                        self.refreshControl.endRefreshing()
+                        self.productCollectionView.isUserInteractionEnabled = true
                     }
                 }
             }

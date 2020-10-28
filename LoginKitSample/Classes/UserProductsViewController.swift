@@ -44,10 +44,10 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
                 self.productCollectionView.isHidden = false
                 self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(self.trashButtonTapped))
                 self.navigationItem.rightBarButtonItem?.tintColor = .black
+                
+                DispatchQueue.global().async {
             
-                for listing in listings {
-                    
-                    DispatchQueue.global().async {
+                    for listing in listings {
                     
                         let storage = Storage.storage()
                         let productImageReference = storage.reference(forURL: listing.product_image_url)
@@ -59,10 +59,11 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
                         let convertedProduct = Listing(id: listing.id, product_image: productImage, image_storage_reference: productImageReference)
                 
                         self.listings.append(convertedProduct)
+                        
+                    }
 
-                        DispatchQueue.main.async {
-                            self.productCollectionView.reloadData()
-                        }
+                    DispatchQueue.main.async {
+                        self.productCollectionView.reloadData()
                     }
                 }
             }
@@ -142,10 +143,10 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
                 self.productCollectionView.isHidden = false
                 self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(self.trashButtonTapped))
                 self.navigationItem.rightBarButtonItem?.tintColor = .black
+                
+                DispatchQueue.global().async {
             
-                for listing in listings {
-                    
-                    DispatchQueue.global().async {
+                    for listing in listings {
                     
                         let storage = Storage.storage()
                         let productImageReference = storage.reference(forURL: listing.product_image_url)
@@ -157,11 +158,12 @@ class UserProductsViewController: UIViewController, UIGestureRecognizerDelegate 
                         let convertedProduct = Listing(id: listing.id, product_image: productImage, image_storage_reference: productImageReference)
                 
                         self.listings.append(convertedProduct)
+                        
+                    }
 
-                        DispatchQueue.main.async {
-                            self.productCollectionView.reloadData()
-                            self.refreshControl.endRefreshing()
-                        }
+                    DispatchQueue.main.async {
+                        self.productCollectionView.reloadData()
+                        self.refreshControl.endRefreshing()
                     }
                 }
             }

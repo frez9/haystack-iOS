@@ -212,6 +212,9 @@ class ProfileViewController: UIViewController, UIGestureRecognizerDelegate, SFSa
             defaults.set(usernameField.text, forKey: "snapchat_username")
             NetworkManager.updateSnapchatUsername()
         }
+        if defaults.bool(forKey: "did_show_username_view") == false {
+            defaults.set(true, forKey: "did_show_username_view")
+        }
     }
 
 }

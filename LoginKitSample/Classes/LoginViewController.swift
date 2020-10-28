@@ -99,6 +99,7 @@ extension LoginViewController {
         loginButton = SCSDKLoginButton() { (success: Bool, error: Error?) in
             if success {
                 self.getUserInfo()
+                self.defaults.set(true, forKey: "user_did_login")
             }
             if (error != nil) {
                 DispatchQueue.main.async {

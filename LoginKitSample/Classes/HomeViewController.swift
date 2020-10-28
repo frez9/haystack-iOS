@@ -46,7 +46,7 @@ class HomeViewController: UIViewController {
                     defaults.set(true, forKey: "did_accept_add_request")
                 }))
             
-                alert.addAction(UIAlertAction(title: NSLocalizedString("Not Now", comment: "Remind"), style: .default, handler: { _ in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("Not Now", comment: "Remind"), style: .cancel, handler: { _ in
                     
                     defaults.set(-10, forKey: "product_views")
                 }))
@@ -65,10 +65,10 @@ class HomeViewController: UIViewController {
         preventLoad = false
         
         NetworkManager.getProducts() { products in
+            
+            DispatchQueue.global().async {
 
-            for product in products {
-                
-                DispatchQueue.global().async {
+                for product in products {
 
                     let productImageUrl = URL(string: product.product_image_url)
                     let productImageData = try? Data(contentsOf: productImageUrl!)
@@ -87,10 +87,11 @@ class HomeViewController: UIViewController {
                     let convertedProduct = Product(id: product.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: product.seller_snapchat_username, is_favorited: product.is_favorited)
                 
                     self.products.append(convertedProduct)
+                    
+                }
 
-                    DispatchQueue.main.async {
-                        self.productCollectionView.reloadData()
-                    }
+                DispatchQueue.main.async {
+                    self.productCollectionView.reloadData()
                 }
             }
         }
@@ -164,13 +165,13 @@ class HomeViewController: UIViewController {
         NetworkManager.getProducts() { products in
             
             self.products.removeAll()
+            
+            DispatchQueue.global().async {
 
-            for product in products {
-                
-                DispatchQueue.global().async {
+                for product in products {
 
                     let productImageUrl = URL(string: product.product_image_url)
-                    let productImageData = try? Data(contentsOf: productImageUrl!)
+                        let productImageData = try? Data(contentsOf: productImageUrl!)
                     let productImage = UIImage(data: productImageData!)!
                 
                     var avatarImage: UIImage = UIImage()
@@ -186,12 +187,13 @@ class HomeViewController: UIViewController {
                     let newProduct = Product(id: product.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: product.seller_snapchat_username, is_favorited: product.is_favorited)
                 
                     self.products.append(newProduct)
+                    
+                }
 
-                    DispatchQueue.main.async {
-                        self.productCollectionView.reloadData()
-                        self.refreshControl.endRefreshing()
-//                        self.productCollectionView.isUserInteractionEnabled = true
-                    }
+                DispatchQueue.main.async {
+                    self.productCollectionView.reloadData()
+                    self.refreshControl.endRefreshing()
+                    self.productCollectionView.isUserInteractionEnabled = true
                 }
             }
         }
@@ -257,49 +259,50 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-//        if indexPath.row == products.count - 1 {
-//            pageNumber += 1
-//
-//            if preventLoad == false {
-//
-//                NetworkManager.getProducts() { products in
-//
-//                    if products.isEmpty == false {
-//
-//                        for product in products.reversed() {
-//
-//                            DispatchQueue.global().async {
-//
-//                                let productImageUrl = URL(string: product.product_image_url)
-//                                let productImageData = try? Data(contentsOf: productImageUrl!)
-//                                let productImage = UIImage(data: productImageData!)!
-//
-//                                var avatarImage: UIImage = UIImage()
-//
-//                                if product.avatar_url != "nil" {
-//                                    let avatarImageUrl = URL(string: product.avatar_url)
-//                                    let avatarImageData = try? Data(contentsOf: avatarImageUrl!)
-//                                    avatarImage = UIImage(data: avatarImageData!)!
-//                                } else {
-//                                    avatarImage = UIImage(named: "profile")!
-//                                }
-//
-//                                let newProduct = Product(id: product.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: product.seller_snapchat_username, is_favorited: product.is_favorited)
-//
-//                                self.products.append(newProduct)
-//
-//                                DispatchQueue.main.async {
-//                                    self.productCollectionView.reloadData()
-//                                }
-//                            }
-//                        }
-//
-//                    } else {
-//                        self.preventLoad = true
-//                    }
-//                }
-//            }
-//        }
+        if indexPath.item == products.count - 6 {
+            pageNumber += 1
+
+            if preventLoad == false {
+
+                NetworkManager.getProducts() { products in
+
+                    if products.isEmpty == false {
+                        
+                        DispatchQueue.global().async {
+
+                            for product in products {
+
+                                let productImageUrl = URL(string: product.product_image_url)
+                                let productImageData = try? Data(contentsOf: productImageUrl!)
+                                let productImage = UIImage(data: productImageData!)!
+
+                                var avatarImage: UIImage = UIImage()
+
+                                if product.avatar_url != "nil" {
+                                    let avatarImageUrl = URL(string: product.avatar_url)
+                                    let avatarImageData = try? Data(contentsOf: avatarImageUrl!)
+                                    avatarImage = UIImage(data: avatarImageData!)!
+                                } else {
+                                    avatarImage = UIImage(named: "profile")!
+                                }
+
+                                let newProduct = Product(id: product.id, product_image: productImage, avatar_image: avatarImage, seller_snapchat_username: product.seller_snapchat_username, is_favorited: product.is_favorited)
+
+                                self.products.append(newProduct)
+                                
+                            }
+
+                            DispatchQueue.main.async {
+                                self.productCollectionView.reloadData()
+                            }
+                        }
+
+                    } else {
+                        self.preventLoad = true
+                    }
+                }
+            }
+        }
     }
 
  //This function prevents the collectionView from accessing a deallocated cell. In the event

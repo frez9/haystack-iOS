@@ -59,9 +59,8 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
         cameraView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(cameraView)
         
-        guard let backCamera = AVCaptureDevice.default(for: AVMediaType.video)
-            else {
-                return
+        guard let backCamera = AVCaptureDevice.default(for: AVMediaType.video) else {
+            return
         }
         
         do {
@@ -85,8 +84,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
                         UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
                     }))
 
-                    alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: "Close alert"), style: .default, handler: { _ in
-                        self.dismiss(animated: true, completion: nil)
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("Close", comment: "Close alert"), style: .cancel, handler: { _ in
                     }))
 
                     self.present(alert, animated: true, completion: nil)
@@ -309,6 +307,9 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
     }
     
     @objc func captureButtonTapped() {
+        if AVCaptureDevice.authorizationStatus(for: AVMediaType.video) == .denied || AVCaptureDevice.authorizationStatus(for: AVMediaType.video) == .notDetermined || AVCaptureDevice.authorizationStatus(for: AVMediaType.video) == .restricted {
+            return
+        }
         Analytics.logEvent("photo_captured", parameters: nil)
         let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
         stillImageOutput.capturePhoto(with: settings, delegate: self)
