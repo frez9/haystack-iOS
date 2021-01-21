@@ -16,15 +16,20 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
     weak var delegate: FavoriteProtocol?
     
     var id: Int!
-    var sellerSnapchatUsername: String!
     var favorited: Bool!
     
     var productImage: UIImageView! = UIImageView()
-    var messageSellerButton: UIButton!
     var sellerAvatar: UIButton! = UIButton()
+    var viewIcon: UIImageView!
     var reportButton: UIButton!
     var favoriteButton: UIButton!
+    var viewCount: UILabel!
+    var favoriteCount: UILabel!
+    var background: UIView!
+    var buyButton: UIButton!
+    var infoButton: UIButton!
     
+    var infoView: UIView!
     
     var panGestureRecognizer: UIPanGestureRecognizer!
     
@@ -38,7 +43,6 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
         self.productImage.image = image
         self.sellerAvatar.setImage(avatar, for: .normal)
         self.favorited = favorited
-        self.sellerSnapchatUsername = sellerSnapchatUsername
         self.delegate = delegate
 
     }
@@ -69,6 +73,28 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
         sellerAvatar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(sellerAvatar)
         
+        background = UIView()
+        background.backgroundColor = .black
+        background.alpha = 0.5
+        background.layer.cornerRadius = 25
+        background.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(background)
+        
+        viewIcon = UIImageView()
+        viewIcon.image = UIImage(named: "eye")
+        viewIcon.contentMode = .scaleToFill
+        viewIcon.clipsToBounds = true
+        viewIcon.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(viewIcon)
+        
+        viewCount = UILabel()
+        viewCount.font = UIFont.init(name: "AvenirNext-DemiBold", size: 12.5)
+        viewCount.text = 33333.roundedWithAbbreviations
+        viewCount.textAlignment = .center
+        viewCount.textColor = .white
+        viewCount.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(viewCount)
+        
         favoriteButton = UIButton()
         if favorited == false {
             let favoriteImage = UIImage(named: "heart")
@@ -81,6 +107,14 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
         favoriteButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(favoriteButton)
         
+        favoriteCount = UILabel()
+        favoriteCount.font = UIFont.init(name: "AvenirNext-DemiBold", size: 12.5)
+//        favoriteCount.text = 0.roundedWithAbbreviations
+        favoriteCount.textAlignment = .center
+        favoriteCount.textColor = .white
+        favoriteCount.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(favoriteCount)
+        
         reportButton = UIButton()
         let reportImage = UIImage(named: "flag")
         reportButton.setImage(reportImage, for: .normal)
@@ -88,14 +122,31 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
         reportButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(reportButton)
         
-        messageSellerButton = UIButton()
-        messageSellerButton.setTitle("Message Seller", for: .normal)
-        messageSellerButton.addTarget(self, action: #selector(messageSellerButtonTapped), for: .touchUpInside)
-        messageSellerButton.titleLabel?.font = UIFont.init(name: "AvenirNext-DemiBold", size: 23)
-        messageSellerButton.backgroundColor = UIColor(red: 155.0/255.0, green: 085.0/255.0, blue: 160.0/255.0, alpha: 1.0)
-        messageSellerButton.layer.cornerRadius = 25
-        messageSellerButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(messageSellerButton)
+        buyButton = UIButton()
+        buyButton.setTitle("Buy Now", for: .normal)
+        buyButton.addTarget(self, action: #selector(buyButtonTapped), for: .touchUpInside)
+        buyButton.titleLabel?.font = UIFont.init(name: "AvenirNext-DemiBold", size: 23)
+        buyButton.backgroundColor = UIColor(red: 155.0/255.0, green: 085.0/255.0, blue: 160.0/255.0, alpha: 1.0)
+        buyButton.layer.cornerRadius = 25
+        buyButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(buyButton)
+        
+        infoButton = UIButton()
+        let infoImage = UIImage(named: "info")
+        infoButton.setImage(infoImage, for: .normal)
+        infoButton.addTarget(self, action: #selector(infoButtonTapped), for: .touchUpInside)
+        infoButton.backgroundColor = .white
+        infoButton.layer.cornerRadius = 25
+        infoButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(infoButton)
+        
+        infoView = UIView()
+        infoView.backgroundColor = .white
+        infoView.layer.cornerRadius = 40
+        infoView.alpha = 1.0
+        infoView.isHidden = true
+        infoView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(infoView)
         
 
         setUpConstraints()
@@ -106,11 +157,23 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
         
         NSLayoutConstraint.activate([sellerAvatar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 15), sellerAvatar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 25), sellerAvatar.trailingAnchor.constraint(equalTo: sellerAvatar.leadingAnchor, constant: 40), sellerAvatar.bottomAnchor.constraint(equalTo: sellerAvatar.topAnchor, constant: 40)])
         
+        NSLayoutConstraint.activate([background.topAnchor.constraint(equalTo: sellerAvatar.topAnchor, constant: -5), background.trailingAnchor.constraint(equalTo: reportButton.trailingAnchor, constant: 20), background.leadingAnchor.constraint(equalTo: viewIcon.leadingAnchor, constant: -20), background.bottomAnchor.constraint(equalTo: viewCount.bottomAnchor, constant: 5)])
+        
+        NSLayoutConstraint.activate([viewIcon.centerYAnchor.constraint(equalTo: sellerAvatar.centerYAnchor), viewIcon.trailingAnchor.constraint(equalTo: favoriteButton.leadingAnchor, constant: -20)])
+        
+        NSLayoutConstraint.activate([viewCount.centerXAnchor.constraint(equalTo: viewIcon.centerXAnchor), viewCount.topAnchor.constraint(equalTo: viewIcon.bottomAnchor, constant: 7)])
+        
         NSLayoutConstraint.activate([favoriteButton.centerYAnchor.constraint(equalTo: sellerAvatar.centerYAnchor), favoriteButton.trailingAnchor.constraint(equalTo: reportButton.leadingAnchor, constant: -20)])
         
-        NSLayoutConstraint.activate([reportButton.centerYAnchor.constraint(equalTo: sellerAvatar.centerYAnchor), reportButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -25)])
+        NSLayoutConstraint.activate([favoriteCount.centerXAnchor.constraint(equalTo: favoriteButton.centerXAnchor), favoriteCount.topAnchor.constraint(equalTo: favoriteButton.bottomAnchor, constant: 3)])
         
-        NSLayoutConstraint.activate([messageSellerButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor, constant: -150), messageSellerButton.topAnchor.constraint(equalTo: messageSellerButton.bottomAnchor, constant: -50), messageSellerButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20), messageSellerButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor, constant: 150)])
+        NSLayoutConstraint.activate([reportButton.centerYAnchor.constraint(equalTo: sellerAvatar.centerYAnchor), reportButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -35)])
+        
+        NSLayoutConstraint.activate([buyButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30), buyButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20), buyButton.topAnchor.constraint(equalTo: buyButton.bottomAnchor, constant: -50), buyButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor, constant: 100)])
+        
+        NSLayoutConstraint.activate([infoButton.leadingAnchor.constraint(equalTo: buyButton.trailingAnchor, constant: 10), infoButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20), infoButton.topAnchor.constraint(equalTo: buyButton.bottomAnchor, constant: -50), infoButton.trailingAnchor.constraint(equalTo: infoButton.leadingAnchor, constant: 60)])
+        
+        NSLayoutConstraint.activate([infoView.leadingAnchor.constraint(equalTo: view.leadingAnchor) , infoView.trailingAnchor.constraint(equalTo: view.trailingAnchor), infoView.topAnchor.constraint(equalTo: view.centerYAnchor, constant: 100), infoView.bottomAnchor.constraint(equalTo: view.bottomAnchor)])
     }
     
     @objc func avatarButtonTapped() {
@@ -129,13 +192,23 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
         self.present(alert, animated: true, completion: nil)
     }
     
-    @objc func messageSellerButtonTapped() {
-        Analytics.logEvent("messaged_seller", parameters: nil)
-        if sellerSnapchatUsername.isEmpty == false {
-            UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/\(sellerSnapchatUsername!)")!)
-        } else {
-            UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/x")!)
-        }
+    @objc func buyButtonTapped() {
+//        Analytics.logEvent("messaged_seller", parameters: nil)
+//        if sellerSnapchatUsername.isEmpty == false {
+//            UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/\(sellerSnapchatUsername!)")!)
+//        } else {
+//            UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/x")!)
+//        }
+    }
+    
+    @objc func infoButtonTapped() {
+        infoView.animShow()
+//        Analytics.logEvent("messaged_seller", parameters: nil)
+//        if sellerSnapchatUsername.isEmpty == false {
+//            UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/\(sellerSnapchatUsername!)")!)
+//        } else {
+//            UIApplication.shared.open(URL(string: "https://www.snapchat.com/add/x")!)
+//        }
     }
 
     @objc func favoriteButtonTapped() {
@@ -143,6 +216,13 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
             Analytics.logEvent("product_favorited", parameters: nil)
             let favoriteImageFill = UIImage(named: "heartfill")
             favoriteButton.setImage(favoriteImageFill, for: .normal)
+            if favoriteCount.text == nil {
+                favoriteCount.text = "1"
+            } else {
+                var count = Int(favoriteCount.text!)
+                count! += 1
+                favoriteCount.text = count!.roundedWithAbbreviations
+            }
             favorited = true
             if defaults.bool(forKey: "did_request_review") == false {
                 defaults.set(defaults.integer(forKey: "minimum_review_actions")+1, forKey: "minimum_review_actions")
@@ -158,6 +238,13 @@ class ProductViewController: UIViewController, UIGestureRecognizerDelegate {
             Analytics.logEvent("product_unfavorited", parameters: nil)
             let favoriteImage = UIImage(named: "heart")
             favoriteButton.setImage(favoriteImage, for: .normal)
+            var count = Int(favoriteCount.text!)
+            count! -= 1
+            if count == 0 {
+                favoriteCount.text = nil
+            } else {
+                favoriteCount.text = count!.roundedWithAbbreviations
+            }
             favorited = false
             if defaults.bool(forKey: "did_request_review") == false {
                 defaults.set(defaults.integer(forKey: "minimum_review_actions")-1, forKey: "minimum_review_actions")
@@ -241,12 +328,26 @@ extension ProductViewController: ZoomAnimatorDelegate {
 
     func transitionWillStartWith(zoomAnimator: ZoomAnimator) {
         sellerAvatar.isHidden = true
-        messageSellerButton.isHidden = true
+        background.isHidden = true
+        viewIcon.isHidden = true
+        viewCount.isHidden = true
+        favoriteButton.isHidden = true
+        favoriteCount.isHidden = true
+        reportButton.isHidden = true
+        buyButton.isHidden = true
+        infoButton.isHidden = true
     }
 
     func transitionDidEndWith(zoomAnimator: ZoomAnimator) {
         sellerAvatar.isHidden = false
-        messageSellerButton.isHidden = false
+        background.isHidden = false
+        viewIcon.isHidden = false
+        viewCount.isHidden = false
+        favoriteButton.isHidden = false
+        favoriteCount.isHidden = false
+        reportButton.isHidden = false
+        buyButton.isHidden = false
+        infoButton.isHidden = false
     }
 
     func referenceImageView(for zoomAnimator: ZoomAnimator) -> UIImageView? {
@@ -255,5 +356,22 @@ extension ProductViewController: ZoomAnimatorDelegate {
 
     func referenceImageViewFrameInTransitioningView(for zoomAnimator: ZoomAnimator) -> CGRect? {
         return self.productImage.frame
+    }
+}
+
+extension Int {
+    var roundedWithAbbreviations: String {
+        let number = Double(self)
+        let thousand = number / 1000
+        let million = number / 1000000
+        if million >= 1.0 {
+            return "\(round(million*10)/10)M"
+        }
+        else if thousand >= 1.0 {
+            return "\(round(thousand*10)/10)K"
+        }
+        else {
+            return "\(self)"
+        }
     }
 }

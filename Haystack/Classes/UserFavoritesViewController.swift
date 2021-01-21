@@ -224,7 +224,7 @@ extension UserFavoritesViewController: UICollectionViewDelegate, UICollectionVie
             cell.configure3()
         } else {
             let dataModel = favorites[indexPath.item]
-            cell.configure(product: dataModel)
+            cell.homeConfigure(product: dataModel)
         }
         return cell
     }

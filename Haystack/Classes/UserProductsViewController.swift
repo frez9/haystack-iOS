@@ -295,7 +295,7 @@ extension UserProductsViewController: UICollectionViewDelegate, UICollectionView
             cell.configure3()
         } else {
             let dataModel = listings[indexPath.item]
-            cell.configure2(listing: dataModel)
+            cell.myListingsConfigure(listing: dataModel)
         }
         return cell
     }

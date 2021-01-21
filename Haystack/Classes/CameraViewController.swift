@@ -21,12 +21,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
     var deleteButton: UIButton!
     var postButton: UIButton!
     
-    var usernameView: UIView!
-    var titleLabel: UILabel!
-    var subtitleLabel: UILabel!
-    var usernameField: UITextField!
-    var doneButton: UIButton!
-    
     var captureSession: AVCaptureSession!
     var stillImageOutput: AVCapturePhotoOutput!
     var videoPreviewLayer: AVCaptureVideoPreviewLayer!
@@ -130,51 +124,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
         postButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(postButton)
         
-        usernameView = UIView()
-        usernameView.alpha = 0
-        usernameView.layer.borderWidth = 0.5
-        usernameView.backgroundColor = .white
-        usernameView.layer.cornerRadius = 20
-        usernameView.frame.size.height = 185
-        usernameView.frame.size.width = 275
-        usernameView.center = view.center
-        view.addSubview(usernameView)
-        
-        titleLabel = UILabel()
-        titleLabel.font = UIFont.init(name: "AvenirNext-DemiBold", size: 17)
-        titleLabel.text = "Enter Your Snapchat Username"
-        titleLabel.textColor = .black
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        usernameView.addSubview(titleLabel)
-        
-        subtitleLabel = UILabel()
-        subtitleLabel.font = UIFont.init(name: "AvenirNext-Medium", size: 15)
-        subtitleLabel.text = "(this is how buyers will reach you)"
-        subtitleLabel.textColor = .black
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        usernameView.addSubview(subtitleLabel)
-        
-        usernameField = UITextField()
-        usernameField.autocapitalizationType = .none
-        usernameField.autocorrectionType = .no
-        let atLabel = UILabel()
-        atLabel.font = UIFont.init(name: "AvenirNext-Medium", size: 17)
-        atLabel.text = "@ "
-        atLabel.textColor = .black
-        usernameField.leftView = atLabel
-        usernameField.leftViewMode = .always
-        usernameField.font = UIFont.init(name: "AvenirNext-Medium", size: 17)
-        usernameField.translatesAutoresizingMaskIntoConstraints = false
-        usernameView.addSubview(usernameField)
-        
-        doneButton = UIButton()
-        doneButton.setTitle("Done", for: .normal)
-        doneButton.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
-        doneButton.titleLabel?.font = UIFont.init(name: "AvenirNext-DemiBold", size: 17)
-        doneButton.backgroundColor = UIColor(red: 155.0/255.0, green: 085.0/255.0, blue: 160.0/255.0, alpha: 1.0)
-        doneButton.layer.cornerRadius = 15
-        doneButton.translatesAutoresizingMaskIntoConstraints = false
-        usernameView.addSubview(doneButton)
         
         setUpConstraints()
         
@@ -195,13 +144,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
         
         NSLayoutConstraint.activate([postButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor, constant: -150), postButton.topAnchor.constraint(equalTo: postButton.bottomAnchor, constant: -50), postButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20), postButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor, constant: 150)])
         
-        NSLayoutConstraint.activate([titleLabel.centerXAnchor.constraint(equalTo: usernameView.centerXAnchor), titleLabel.topAnchor.constraint(equalTo: usernameView.topAnchor, constant: 15)])
-        
-        NSLayoutConstraint.activate([subtitleLabel.centerXAnchor.constraint(equalTo: usernameView.centerXAnchor), subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 5)])
-        
-        NSLayoutConstraint.activate([usernameField.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20), usernameField.leadingAnchor.constraint(equalTo: usernameView.centerXAnchor, constant: -60), usernameField.trailingAnchor.constraint(equalTo: usernameView.centerXAnchor, constant: 60)])
-        
-        NSLayoutConstraint.activate([doneButton.leadingAnchor.constraint(equalTo: usernameView.centerXAnchor, constant: -65), doneButton.topAnchor.constraint(equalTo: doneButton.bottomAnchor, constant: -35), doneButton.bottomAnchor.constraint(equalTo: usernameView.bottomAnchor, constant: -15), doneButton.trailingAnchor.constraint(equalTo: usernameView.centerXAnchor, constant: 65)])
     }
     
     @objc func handleDismiss(sender: UIPanGestureRecognizer) {
@@ -242,68 +184,48 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIG
     }
     
     @objc func postButtonTapped() {
-        if defaults.bool(forKey: "did_show_username_view") == false {
-            UIView.animate(withDuration: 0.15, animations: {
-                self.usernameView.alpha = 1
-                self.deleteButton.isUserInteractionEnabled = false
-            })
-        } else {
-            Analytics.logEvent("photo_posted", parameters: nil)
-            guard let snapImage = capturedImageView!.image else {
-                return
-            }
+        Analytics.logEvent("photo_posted", parameters: nil)
+        guard let snapImage = capturedImageView!.image else {
+            return
+        }
 
-            let snapPhoto = SCSDKSnapPhoto(image: snapImage)
-            let snapContent = SCSDKPhotoSnapContent(snapPhoto: snapPhoto)
-            snapContent.attachmentUrl = "https://apps.apple.com/us/app/haystack-shopping/id1537822320"
-            let sticker = SCSDKSnapSticker(stickerUrl: URL(string: "https://iili.io/2al1OG.png")!, isAnimated: false)
-            snapContent.sticker = sticker
-            sticker.posX = 0.5
-            sticker.posY = 0.78
+        let snapPhoto = SCSDKSnapPhoto(image: snapImage)
+        let snapContent = SCSDKPhotoSnapContent(snapPhoto: snapPhoto)
+        snapContent.attachmentUrl = "https://apps.apple.com/us/app/haystack-shopping/id1537822320"
+        let sticker = SCSDKSnapSticker(stickerUrl: URL(string: "https://iili.io/2al1OG.png")!, isAnimated: false)
+        snapContent.sticker = sticker
+        sticker.posX = 0.5
+        sticker.posY = 0.78
 
-            view.isUserInteractionEnabled = false
+        view.isUserInteractionEnabled = false
 
-            let storage = Storage.storage()
-            let storageRef = storage.reference()
-            let productImageRef = storageRef.child("\(defaults.string(forKey: "external_id")!)/\(UUID().uuidString).jpg")
-            productImageRef.putData(self.uploadData, metadata: nil) { (metadata, error) in
-                productImageRef.downloadURL { (url, error) in
-                    guard let downloadURL = url else {
-                        return
-                    }
-                    productImageURL = "\(downloadURL)"
-                    
-                    NetworkManager.createListing() {
+        let storage = Storage.storage()
+        let storageRef = storage.reference()
+        let productImageRef = storageRef.child("\(defaults.string(forKey: "external_id")!)/\(UUID().uuidString).jpg")
+        productImageRef.putData(self.uploadData, metadata: nil) { (metadata, error) in
+            productImageRef.downloadURL { (url, error) in
+                guard let downloadURL = url else {
+                    return
+                }
+                productImageURL = "\(downloadURL)"
+                
+                NetworkManager.createListing() {
 
-                        self.snapAPI?.startSending(snapContent) { error in
+                    self.snapAPI?.startSending(snapContent) { error in
+                        
+                        if let error = error {
+                            print(error.localizedDescription)
                             
-                            if let error = error {
-                                print(error.localizedDescription)
-                                
-                            } else {
-                                self.view.isUserInteractionEnabled = true
-                                self.dismiss(animated: true)
-                                self.captureSession.stopRunning()
+                        } else {
+                            self.view.isUserInteractionEnabled = true
+                            self.dismiss(animated: true)
+                            self.captureSession.stopRunning()
 //                                defaults.set(defaults.integer(forKey: "image_storage_id")+1, forKey: "image_storage_id")
-                            }
                         }
                     }
                 }
             }
         }
-    }
-    
-    @objc func doneButtonTapped() {
-        if defaults.bool(forKey: "did_show_username_view") == false {
-            defaults.set(true, forKey: "did_show_username_view")
-        }
-        UIView.animate(withDuration: 0.15, animations: {
-            self.usernameView.alpha = 0
-            self.usernameView.endEditing(true)
-            self.deleteButton.isUserInteractionEnabled = true
-        })
-        defaults.set(usernameField.text, forKey: "snapchat_username")
-        NetworkManager.updateSnapchatUsername()
     }
     
     @objc func captureButtonTapped() {

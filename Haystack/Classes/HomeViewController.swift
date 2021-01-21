@@ -34,7 +34,7 @@ class HomeViewController: UIViewController {
     var preventLoad: Bool!
     
     override func viewDidAppear(_ animated: Bool) {
-
+        
         if defaults.bool(forKey: "did_accept_add_request") == false {
             
             if defaults.integer(forKey: "product_views") == viewInt {
@@ -59,7 +59,7 @@ class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         self.navigationController?.setNavigationBarHidden(false, animated: false)
 
         view.backgroundColor = .white
@@ -101,6 +101,7 @@ class HomeViewController: UIViewController {
 
                 DispatchQueue.main.async {
                     self.productCollectionView.reloadData()
+                    self.productCollectionView.allowsSelection = true
                 }
             }
         }
@@ -139,6 +140,7 @@ class HomeViewController: UIViewController {
         productCollectionView.showsVerticalScrollIndicator = false
         productCollectionView.alwaysBounceVertical = true
         productCollectionView.refreshControl = refreshControl
+        productCollectionView.allowsSelection = false
         productCollectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(productCollectionView)
         
@@ -170,6 +172,7 @@ class HomeViewController: UIViewController {
     @objc func didPullToRefresh() {
         pageNumber = 1
         preventLoad = false
+        productCollectionView.allowsSelection = false
         NetworkManager.getProducts() { products in
             
             self.products.removeAll()
@@ -201,7 +204,7 @@ class HomeViewController: UIViewController {
                 DispatchQueue.main.async {
                     self.productCollectionView.reloadData()
                     self.refreshControl.endRefreshing()
-                    self.productCollectionView.isUserInteractionEnabled = true
+                    self.productCollectionView.allowsSelection = true
                 }
             }
         }
@@ -209,9 +212,15 @@ class HomeViewController: UIViewController {
     
     @objc func sellButtonTapped() {
         Analytics.logEvent("sell_button_pressed", parameters: nil)
-        let vc = CameraViewController()
-        vc.modalPresentationStyle = .overCurrentContext
-        present(vc, animated: true)
+        if defaults.bool(forKey: "user_did_login") == true {
+            let vc = CameraViewController()
+            vc.modalPresentationStyle = .overCurrentContext
+            present(vc, animated: true)
+        } else {
+            let vc = LoginViewController()
+            present(vc, animated: true)
+            vc.exitButton.isHidden = true
+        }
     }
     
     @objc func profileButtonTapped() {
@@ -261,7 +270,7 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
             cell.configure3()
         } else {
             let dataModel = products[indexPath.item]
-            cell.configure(product: dataModel)
+            cell.homeConfigure(product: dataModel)
         }
         return cell
     }
