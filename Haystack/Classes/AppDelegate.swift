@@ -9,6 +9,7 @@
 import UIKit
 import SCSDKLoginKit
 import Firebase
+import Braintree
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -45,6 +46,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         FirebaseApp.configure()
+        
+        BTAppSwitch.setReturnURLScheme("com.haystackshopping.Haystack.payments")
 
         return true
     }
@@ -52,6 +55,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication,
                      open url: URL,
                      options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        if url.scheme?.localizedCaseInsensitiveCompare("com.haystackshopping.Haystack.payments") == .orderedSame {
+                return BTAppSwitch.handleOpen(url, options: options)
+            }
         return SCSDKLoginClient.application(app, open: url, options: options)
     }
     

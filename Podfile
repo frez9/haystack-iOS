@@ -7,4 +7,7 @@ target 'Haystack' do
   pod 'Firebase/Storage'
   pod 'Firebase/Crashlytics'
   pod 'Alamofire'
+  pod 'Braintree'
+  pod 'BraintreeDropIn'
+  pod 'Braintree/Venmo'
 end
